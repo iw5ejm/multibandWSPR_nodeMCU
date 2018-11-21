@@ -5,8 +5,8 @@
 // 
 // Original code based on Feld Hell beacon for Arduino by Mark 
 // Vandewettering K6HX, adapted for the Si5351A by Robert 
-// Liesenfeld AK6L <ak6l@ak6l.org>.  Timer setup
-// code by Thomas Knutsen LA3PNA.
+// Liesenfeld AK6L <ak6l@ak6l.org>.  NTP server setup
+// code by Marco Campinoti IU5HKU. 
 //
 // Hardware info
 // ---------------------
@@ -70,10 +70,6 @@
 #define TX_LED_PIN              2  //integrated onboard led, marked as D4 on Wemos D1 mini lite
 #define SYNC_LED_PIN            16 //marked as D4 on Wemos D0 mini lite
 
-//****************************************************
-//* SYNCRONIZE SYSTEM TIME with NTP SERVERS
-//* need to be modified, obsolete library in use...
-//****************************************************
 #define SEND_INTV     10
 #define RECV_TIMEOUT  10
 
@@ -85,7 +81,7 @@ unsigned long freq0 = 7040141UL;                  // Change this
 //unsigned long freq1 =  7040158UL;                // Change this
 unsigned long freq2 = 28126141UL;                // Change this
 
-char call[7] = "IW5EJM";                        // Change this
+char call[7] = "YOURCALL";                        // Change this
 char loc[5] = "JN53";                           // Change this
 uint8_t dbm = 10;
 uint8_t tx_buffer[SYMBOL_COUNT];
@@ -93,11 +89,8 @@ uint8_t tx_buffer[SYMBOL_COUNT];
 const char* ssid = “YourSSIDhere”;       //SSID of your Wifi network: Change this
 const char* password = “YourPASSWORDhere”;      //Wi-Fi Password:            Change this
 
-
-//**** How the station is named in your NET
 const char* WiFi_hostname = "WSPRmultiTX";
 
-//**** Sync the soft clock every 12 hours
 #define NTPSYNC_DELAY  12
 
 //**** NTP Server to use
