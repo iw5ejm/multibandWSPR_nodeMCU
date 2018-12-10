@@ -211,7 +211,7 @@ void setup()
 
   
   // Set CLK0 output
-  si5351.set_freq(freq1 * 100, SI5351_CLK0);
+  si5351.set_freq(freq0 * 100, SI5351_CLK0);
   si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA); // Set for max power
   si5351.set_clock_pwr(SI5351_CLK0, 0); // Disable the clock initially
 
