@@ -87,7 +87,10 @@
 // Global variables
 Si5351 si5351;
 JTEncode jtencode;
+
+#define MAXCH      5 //Change this according to the number of bands inserted below
 unsigned long freq0[] = {14097158UL, 10140258UL, 7040158UL, 5366258UL, 3594158UL}; //CHANGE THIS: is the freq of multiband output on jack 1 (clock0)
+
 //unsigned long freq0 = 14097158UL;                  // RFU
 #ifdef clock1
 unsigned long freq1 =  7040158UL;                // Change this: if used is the freq of single band output on jack 2 (clock1)
@@ -104,7 +107,7 @@ uint8_t dbm = 10;
 uint8_t tx_buffer[SYMBOL_COUNT];
 
 const char* ssid = "SSIDofWIFI";       //SSID of your Wifi network: Change this
-const char* password = "PASSWORD";      //Wi-Fi Password:            Change this
+const char* password = "PASSWORDofWIFI";      //Wi-Fi Password:            Change this
 
 
 //**** How the station is named in your NET
@@ -192,6 +195,8 @@ void encode()
     
     digitalWrite(TX_LED_PIN, HIGH);
     Serial.println("TX OFF");
+    ch++;
+    if (ch==MAXCH) ch=0;
 }
 
 void ssidConnect()
@@ -273,8 +278,7 @@ void loop()
   // 30 seconds before enable si5351a output to eliminate startup drift
   if((minute() + 1) % 5 == 0 && second() == 30 && !warmup)
     { warmup=1;
-      ch++;
-      if (ch==7) ch=0;
+    
       si5351.set_freq(freq0[ch] * 100, SI5351_CLK0);
       si5351.set_clock_pwr(SI5351_CLK0, 1);
       
