@@ -103,8 +103,8 @@ char loc[5] = "JN53";                           // Change this
 uint8_t dbm = 10;
 uint8_t tx_buffer[SYMBOL_COUNT];
 
-const char* ssid = "00cavallo00";       //SSID of your Wifi network: Change this
-const char* password = "MINTCHEV";      //Wi-Fi Password:            Change this
+const char* ssid = "SSIDofWIFI";       //SSID of your Wifi network: Change this
+const char* password = "PASSWORD";      //Wi-Fi Password:            Change this
 
 
 //**** How the station is named in your NET
