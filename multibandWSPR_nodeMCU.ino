@@ -83,11 +83,6 @@
 
 //#define clock2 //if uncommented this define enables jack 3 (clock1 of si5351) output
 
-
-// Global variables
-Si5351 si5351;
-JTEncode jtencode;
-
 #define MAXCH      5 //Change this according to the number of bands inserted below
 unsigned long freq0[] = {14097158UL, 10140258UL, 7040158UL, 5366258UL, 3594158UL}; //CHANGE THIS: is the freq of multiband output on jack 1 (clock0)
 
@@ -98,8 +93,6 @@ unsigned long freq1 =  7040158UL;                // Change this: if used is the 
 #ifdef clock2
 unsigned long freq2 = 28126158UL;                // Change this: if used is the freq of single band output on jack 3 (clock2)
 #endif
-int ch=0; // automatic frequency switch index
-bool warmup=0;
 
 char call[7] = "IW5EJM";                        // Change this
 char loc[5] = "JN53";                           // Change this
@@ -121,6 +114,14 @@ const char* NTP_Server = "ntp1.inrim.it"; //italian national institute for measu
 
 //**** Your time zone UTC related (floating point number)
 #define TIME_ZONE 1.0f
+
+
+//some system variable. Anything to touch from here 
+// Global variables
+Si5351 si5351;
+JTEncode jtencode;
+int ch=0; // automatic frequency switch index
+bool warmup=0;
 
 NTPtime NTPch(NTP_Server);   
 strDateTime dateTime;
@@ -195,8 +196,10 @@ void encode()
     
     digitalWrite(TX_LED_PIN, HIGH);
     Serial.println("TX OFF");
+    
+    //change band on clock0 for next tx
     ch++;
-    if (ch==MAXCH) ch=0;
+    if (ch==MAXCH) ch=0; //reset band index to start again from first band the in array
 }
 
 void ssidConnect()
@@ -275,9 +278,9 @@ void loop()
   // WSPR should start on the 1st second of the minute, but there's a slight delay
   // in this code because it is limited to 1 second resolution.
   
-  // 30 seconds before enable si5351a output to eliminate startup drift
+  // 30 seconds before trigger enable si5351a output to eliminate startup drift
   if((minute() + 1) % 5 == 0 && second() == 30 && !warmup)
-    { warmup=1;
+    { warmup=1; //warm up started, bypass this if for the next 30 seconds
     
       si5351.set_freq(freq0[ch] * 100, SI5351_CLK0);
       si5351.set_clock_pwr(SI5351_CLK0, 1);
@@ -292,10 +295,10 @@ void loop()
     }
 
   if(minute() % 5 == 0 && second() == 0)
-    {
-      Serial.println(now());
+    { //time to start encoding
+      Serial.println(now()); //prints on serialport actual time
       encode();
-      warmup=0;
+      warmup=0; //reset bool variable for next warmup cycle wich will start in 4 minutes and 30 seconds
       delay(1000);
      }
   }
