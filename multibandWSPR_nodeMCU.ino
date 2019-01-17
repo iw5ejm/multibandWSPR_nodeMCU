@@ -5,8 +5,8 @@
 // 
 // Original code based on Feld Hell beacon for Arduino by Mark 
 // Vandewettering K6HX, adapted for the Si5351A by Robert 
-// Liesenfeld AK6L <ak6l@ak6l.org>.  NTP server setup
-// code by Marco Campinoti IU5HKU. 
+// Liesenfeld AK6L <ak6l@ak6l.org>.  Timer setup
+// code by Thomas Knutsen LA3PNA.
 //
 // Hardware info
 // ---------------------
@@ -65,32 +65,52 @@
 #define WSPR_DELAY              683          // Delay value for WSPR
 #define WSPR_CTC                10672         // CTC value for WSPR
 #define SYMBOL_COUNT            WSPR_SYMBOL_COUNT
-#define CORRECTION              -12000             // Change this for your ref osc
+#define CORRECTION              -12242             // Change this for your ref osc -12000 
 
 #define TX_LED_PIN              2  //integrated onboard led, marked as D4 on Wemos D1 mini lite
 #define SYNC_LED_PIN            16 //marked as D4 on Wemos D0 mini lite
 
+//****************************************************
+//* SYNCRONIZE SYSTEM TIME with NTP SERVERS
+//* need to be modified, obsolete library in use...
+//****************************************************
 #define SEND_INTV     10
 #define RECV_TIMEOUT  10
+
+//If you want use more than one jack output uncomment relative define:
+
+//#define clock1 //if uncommented this define enables jack 2 (clock1 of si5351) outputREMEMBER TO CHANGE FREQUENCY BELOW
+
+//#define clock2 //if uncommented this define enables jack 3 (clock1 of si5351) output
 
 
 // Global variables
 Si5351 si5351;
 JTEncode jtencode;
-unsigned long freq0 = 7040141UL;                  // Change this
-//unsigned long freq1 =  7040158UL;                // Change this
-unsigned long freq2 = 28126141UL;                // Change this
+unsigned long freq0[] = {14097158UL, 10140258UL, 7040158UL, 5366258UL, 3594158UL}; //CHANGE THIS: is the freq of multiband output on jack 1 (clock0)
+//unsigned long freq0 = 14097158UL;                  // RFU
+#ifdef clock1
+unsigned long freq1 =  7040158UL;                // Change this: if used is the freq of single band output on jack 2 (clock1)
+#endif
+#ifdef clock2
+unsigned long freq2 = 28126158UL;                // Change this: if used is the freq of single band output on jack 3 (clock2)
+#endif
+int ch=0; // automatic frequency switch index
+bool warmup=0;
 
-char call[7] = "YOURCALL";                        // Change this
+char call[7] = "IW5EJM";                        // Change this
 char loc[5] = "JN53";                           // Change this
 uint8_t dbm = 10;
 uint8_t tx_buffer[SYMBOL_COUNT];
 
-const char* ssid = “YourSSIDhere”;       //SSID of your Wifi network: Change this
-const char* password = “YourPASSWORDhere”;      //Wi-Fi Password:            Change this
+const char* ssid = "00cavallo00";       //SSID of your Wifi network: Change this
+const char* password = "MINTCHEV";      //Wi-Fi Password:            Change this
 
+
+//**** How the station is named in your NET
 const char* WiFi_hostname = "WSPRmultiTX";
 
+//**** Sync the soft clock every 12 hours
 #define NTPSYNC_DELAY  12
 
 //**** NTP Server to use
@@ -136,10 +156,10 @@ void encode()
 
     jtencode.wspr_encode(call, loc, dbm, tx_buffer);
     
-    // Reset the tone to 0 and turn on the output
-    si5351.set_clock_pwr(SI5351_CLK0, 1);
+    // Reset the tone to 0 and turn on the output //unused portion of code due to warmup
+    // si5351.set_clock_pwr(SI5351_CLK0, 1);
     // si5351.set_clock_pwr(SI5351_CLK1, 1);
-    si5351.set_clock_pwr(SI5351_CLK2, 1);
+    //si5351.set_clock_pwr(SI5351_CLK2, 1);
 
     digitalWrite(TX_LED_PIN, LOW);
     Serial.println("TX ON");
@@ -147,9 +167,15 @@ void encode()
     // Now do the rest of the message
     for(i = 0; i < SYMBOL_COUNT; i++)
     {
-        si5351.set_freq((freq0 * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK0);
-        //si5351.set_freq((freq1 * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK1);
+        si5351.set_freq((freq0[ch] * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK0);
+        
+        #ifdef clock1
+        si5351.set_freq((freq1 * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK1);
+        #endif
+        
+        #ifdef clock2
         si5351.set_freq((freq2 * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK2);
+        #endif
 
       delay(WSPR_DELAY);
 
@@ -157,9 +183,13 @@ void encode()
         
     // Turn off the output
     si5351.set_clock_pwr(SI5351_CLK0, 0);
-    //si5351.set_clock_pwr(SI5351_CLK1, 0);
+    #ifdef clock1
+    si5351.set_clock_pwr(SI5351_CLK1, 0);
+    #endif
+    #ifdef clock2
     si5351.set_clock_pwr(SI5351_CLK2, 0);
-
+    #endif
+    
     digitalWrite(TX_LED_PIN, HIGH);
     Serial.println("TX OFF");
 }
@@ -211,20 +241,24 @@ void setup()
 
   
   // Set CLK0 output
-  si5351.set_freq(freq0 * 100, SI5351_CLK0);
+  si5351.set_freq(freq0[ch] * 100, SI5351_CLK0);
   si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA); // Set for max power
   si5351.set_clock_pwr(SI5351_CLK0, 0); // Disable the clock initially
 
-  // Set CLK1 output
+#ifdef clock1
+ // Set CLK1 output
   si5351.set_freq(freq1 * 100, SI5351_CLK1);
   si5351.drive_strength(SI5351_CLK1, SI5351_DRIVE_8MA); // Set for max power
   si5351.set_clock_pwr(SI5351_CLK1, 0); // Disable the clock initially
+#endif
 
-  // Set CLK2 output
+#ifdef clock2
+ // Set CLK2 output
   si5351.set_freq(freq2 * 100, SI5351_CLK2);
   si5351.drive_strength(SI5351_CLK2, SI5351_DRIVE_8MA); // Set for max power
   si5351.set_clock_pwr(SI5351_CLK2, 0); // Disable the clock initially
-  
+#endif
+
   Serial.println("Radio Module setup successful");
   Serial.println("Entering loop...");
 }
@@ -235,10 +269,29 @@ void loop()
   // Trigger every 5 minute
   // WSPR should start on the 1st second of the minute, but there's a slight delay
   // in this code because it is limited to 1 second resolution.
+  
+  // 30 seconds before enable si5351a output to eliminate startup drift
+  if((minute() + 1) % 5 == 0 && second() == 30 && !warmup)
+    { warmup=1;
+      ch++;
+      if (ch==7) ch=0;
+      si5351.set_freq(freq0[ch] * 100, SI5351_CLK0);
+      si5351.set_clock_pwr(SI5351_CLK0, 1);
+      
+      #ifdef clock1
+      si5351.set_clock_pwr(SI5351_CLK1, 1);
+      #endif
+      #ifdef clock2
+      si5351.set_clock_pwr(SI5351_CLK2, 1);
+      #endif
+
+    }
+
   if(minute() % 5 == 0 && second() == 0)
     {
       Serial.println(now());
       encode();
+      warmup=0;
       delay(1000);
      }
   }
