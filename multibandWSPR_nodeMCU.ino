@@ -244,7 +244,7 @@ void setup()
   // Change the 2nd parameter in init if using a ref osc other
   // than 25 MHz
   Serial.println("start radio module setup");
-  si5351.init(SI5351_CRYSTAL_LOAD_8PF, 27000000UL, CORRECTION);
+  si5351.init(SI5351_CRYSTAL_LOAD_8PF, 25000000UL, CORRECTION);
   Serial.println("Module intializated");
 
   
