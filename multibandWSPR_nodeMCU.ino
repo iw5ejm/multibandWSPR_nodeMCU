@@ -22,12 +22,14 @@
 //
 // Required Libraries
 // ------------------
-// Etherkit Si5351 (Library Manager)
-// Etherkit JTEncode (Library Manager)
+// Etherkit Si5351 (Library Manager) 2.0.6
+// Etherkit JTEncode (Library Manager) 1.1.3
 // Time (Library Manager)
 // Wire (Arduino Standard Library)
 // NTPtimeESP
-// ESP8266WiFi
+// ESP8266WiFi 1.0.0
+// 
+// ESP8266 framework by esp8266 community 2.4.1 or 2.5.0beta2
 //
 // License
 // -------
@@ -92,7 +94,8 @@ unsigned long freq1 =  7040158UL;                // Change this: if used is the 
 #endif
 #ifdef clock2
 unsigned long freq2 = 28126158UL;                // Change this: if used is the freq of single band output on jack 3 (clock2)
-#endif
+
+#define SI5351_REF 		27000000UL  //change this to the frequency of the crystal on your si5351’s PCB, usually 25 or 27 MHz
 
 char call[7] = "IW5EJM";                        // Change this
 char loc[5] = "JN53";                           // Change this
@@ -244,7 +247,7 @@ void setup()
   // Change the 2nd parameter in init if using a ref osc other
   // than 25 MHz
   Serial.println("start radio module setup");
-  si5351.init(SI5351_CRYSTAL_LOAD_8PF, 25000000UL, CORRECTION);
+  si5351.init(SI5351_CRYSTAL_LOAD_8PF, SI5351_REF, CORRECTION);
   Serial.println("Module intializated");
 
   
@@ -274,12 +277,12 @@ void setup()
 void loop()
 {  
 
-  // Trigger every 5 minute
-  // WSPR should start on the 1st second of the minute, but there's a slight delay
+  // Trigger every 4 minute
+  // WSPR should start on the 1st second of the even minute, but there's a slight delay
   // in this code because it is limited to 1 second resolution.
   
   // 30 seconds before trigger enable si5351a output to eliminate startup drift
-  if((minute() + 1) % 5 == 0 && second() == 30 && !warmup)
+  if((minute() + 1) % 4 == 0 && second() == 30 && !warmup)
     { warmup=1; //warm up started, bypass this if for the next 30 seconds
     
       si5351.set_freq(freq0[ch] * 100, SI5351_CLK0);
@@ -294,7 +297,7 @@ void loop()
 
     }
 
-  if(minute() % 5 == 0 && second() == 0)
+  if(minute() % 4 == 0 && second() == 0)
     { //time to start encoding
       Serial.println(now()); //prints on serialport actual time
       encode();
