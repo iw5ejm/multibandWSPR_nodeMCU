@@ -70,7 +70,7 @@
 #define CORRECTION              -12242             // Change this for your ref osc -12000 
 
 #define TX_LED_PIN              2  //integrated onboard led, marked as D4 on Wemos D1 mini lite
-#define SYNC_LED_PIN            16 //marked as D4 on Wemos D0 mini lite
+#define SYNC_LED_PIN            16 //marked as D on Wemos D1 mini lite
 
 //****************************************************
 //* SYNCRONIZE SYSTEM TIME with NTP SERVERS
@@ -79,21 +79,28 @@
 #define SEND_INTV     10
 #define RECV_TIMEOUT  10
 
+//Jack1 (clock0 of si5351) is enabled by default and is not possibile to deactivate it.
 //If you want use more than one jack output uncomment relative define:
 
-//#define clock1 //if uncommented this define enables jack 2 (clock1 of si5351) outputREMEMBER TO CHANGE FREQUENCY BELOW
+#//define clock1 //if uncommented this define enables jack 2 (clock1 of si5351) outputREMEMBER TO CHANGE FREQUENCY BELOW
 
-//#define clock2 //if uncommented this define enables jack 3 (clock1 of si5351) output
+//#define clock2 //if uncommented this define enables jack 3 (clock2 of si5351) output
 
+
+//****************************************************
+//list of frequencies for jack 1 (clock0 of si5351) output
 #define MAXCH      5 //Change this according to the number of bands inserted below
 unsigned long freq0[] = {14097158UL, 10140258UL, 7040158UL, 5366258UL, 3594158UL}; //CHANGE THIS: is the freq of multiband output on jack 1 (clock0)
 
-//unsigned long freq0 = 14097158UL;                  // RFU
+// frequency for jack 2 (clock1 of si5351) output
 #ifdef clock1
 unsigned long freq1 =  7040158UL;                // Change this: if used is the freq of single band output on jack 2 (clock1)
 #endif
+
+// frequency for jack 3 (clock2 of si5351) output
 #ifdef clock2
 unsigned long freq2 = 28126158UL;                // Change this: if used is the freq of single band output on jack 3 (clock2)
+#endif
 
 #define SI5351_REF 		27000000UL  //change this to the frequency of the crystal on your si5351’s PCB, usually 25 or 27 MHz
 
