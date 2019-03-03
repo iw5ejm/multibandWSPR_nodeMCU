@@ -1,0 +1,7 @@
+ricevi dal repository:
+git pull
+
+
+git add *
+git commit -m "simplified code"
+git push
