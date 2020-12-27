@@ -1,12 +1,11 @@
 // Si5351_WSPR
 //
 // Simple WSPR beacon for ESP8266, with the Etherkit or SV1AFN Si5351A Breakout
-// Board, by Jason Milldrum NT7S.
+// Board.
 // 
-// Original code based on Feld Hell beacon for Arduino by Mark 
+// Original code based on the work by Jason Milldrum NT7S and the Feld Hell beacon for Arduino by Mark 
 // Vandewettering K6HX, adapted for the Si5351A by Robert 
-// Liesenfeld AK6L <ak6l@ak6l.org>.  Timer setup
-// code by Thomas Knutsen LA3PNA.
+// Liesenfeld AK6L <ak6l@ak6l.org>.  Timer setup code by Thomas Knutsen LA3PNA.
 //
 // Hardware info
 // ---------------------
